@@ -36,4 +36,6 @@
     :components
     ((:file "package")
 	 (:file "conditions" :depends-on ("package"))
-	 (:file "decimal" :depends-on ("conditions"))))))
+	 (:file "decimal" :depends-on ("conditions"))
+     (:file "gtin" :depends-on ("conditions"))))))
+            

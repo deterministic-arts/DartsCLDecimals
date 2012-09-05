@@ -57,3 +57,18 @@ class for more specific condition types."))
 functions, if they fail to parse a given input string. The condition instance
 provides information the context of the error, i.e., the string being parsed
 as well as the position where parsing had to stop."))
+
+
+(define-condition gtin-format-error (parse-error)
+  ((partial-result
+     :initarg :partial-result :initform nil :reader gtin-format-error-partial-result
+     :documentation "The GTIN/EAN as seen so far")
+   (digits
+     :initarg :digits :initform nil :reader gtin-format-error-digits
+     :documentation "The number of significant digits parsed"))
+  (:documentation "Condition to be signalled by parse-gtin-value, if
+the string supplied does not contain a well-formed GTIN/EAN number.
+Aside from information already present in superclass parse-error,
+this class additionally gives access to the partial result of the
+parse process, as well as to the number of significant digits
+processed."))
