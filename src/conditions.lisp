@@ -24,42 +24,42 @@
 (in-package "DARTS.LIB.DECIMAL")
 
 
-(define-condition parse-error (error)
+(define-condition parsing-error (error)
   ((value 
-	 :initarg :value :initform nil :reader parse-error-value
+	 :initarg :value :initform nil :reader parsing-error-value
 	 :documentation "The string to parse")
    (start 
-	 :initarg :start :initform nil :reader parse-error-start
+	 :initarg :start :initform nil :reader parsing-error-start
 	 :documentation "Start index into the string of the region to parse")
    (end 
-	 :initarg :end :initform nil :reader parse-error-end
+	 :initarg :end :initform nil :reader parsing-error-end
 	 :documentation "End index into the string of the region to parse")
    (position  
-	 :initarg :position :initform nil :reader parse-error-position
+	 :initarg :position :initform nil :reader parsing-error-position
 	 :documentation "Position, where parsing had to stop")
    (reason
-	 :initarg :reason :initform nil :reader parse-error-reason
+	 :initarg :reason :initform nil :reader parsing-error-reason
 	 :documentation "A keyword describing the type of the failure"))
   (:report (lambda (condition stream)
 			 (format stream "failed to parse the portion between ~S and ~S of ~S; parsing stopped at index ~S~@[ with error code ~A~]"
-					 (parse-error-start condition) 
-					 (parse-error-end condition) 
-					 (parse-error-value condition) 
-					 (parse-error-position condition)
-					 (parse-error-reason condition))))
+					 (parsing-error-start condition) 
+					 (parsing-error-end condition) 
+					 (parsing-error-value condition) 
+					 (parsing-error-position condition)
+					 (parsing-error-reason condition))))
   (:documentation "Condition to be signalled by parser functions, if they
 cannot parse a given region of a string. This class is intended as base
 class for more specific condition types."))
 
 
-(define-condition number-format-error (parse-error) ()
+(define-condition number-format-error (parsing-error) ()
   (:documentation "Condition to be signalled by parse-decimal and related
 functions, if they fail to parse a given input string. The condition instance
 provides information the context of the error, i.e., the string being parsed
 as well as the position where parsing had to stop."))
 
 
-(define-condition gtin-format-error (parse-error)
+(define-condition gtin-format-error (parsing-error)
   ((partial-result
      :initarg :partial-result :initform nil :reader gtin-format-error-partial-result
      :documentation "The GTIN/EAN as seen so far")
@@ -68,7 +68,7 @@ as well as the position where parsing had to stop."))
      :documentation "The number of significant digits parsed"))
   (:documentation "Condition to be signalled by parse-gtin-value, if
 the string supplied does not contain a well-formed GTIN/EAN number.
-Aside from information already present in superclass parse-error,
+Aside from information already present in superclass parsing-error,
 this class additionally gives access to the partial result of the
 parse process, as well as to the number of significant digits
 processed."))
