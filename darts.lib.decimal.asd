@@ -1,6 +1,6 @@
 #|                                           -*- mode: lisp; coding: utf-8 -*-
   Deterministic Arts -- Decimal Numbers Library
-  Copyright (c) 2011 Dirk Esser
+  Copyright (c) 2011, 2015 Dirk Esser
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 (asdf:defsystem :darts.lib.decimal
   :name "darts.lib.decimal"
   :author "Dirk Esser"
-  :version "0.1"
+  :version "0.2"
   :maintainer "Dirk Eßer"
   :licence "MIT"
   :description "Provides various utilities for dealing with decimal numbers"
