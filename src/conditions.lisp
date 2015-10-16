@@ -1,6 +1,6 @@
 #|                                           -*- mode: lisp; coding: utf-8 -*-
   Deterministic Arts -- Decimal Numbers Library
-  Copyright (c) 2011 Dirk Esser
+  Copyright (c) 2013 Dirk Esser
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -41,34 +41,22 @@
 	 :initarg :reason :initform nil :reader parsing-error-reason
 	 :documentation "A keyword describing the type of the failure"))
   (:report (lambda (condition stream)
-			 (format stream "failed to parse the portion between ~S and ~S of ~S; parsing stopped at index ~S~@[ with error code ~A~]"
+			 (format stream "failed to parse the portion between ~S and ~
+                             ~S of ~S; parsing stopped~@[ at index ~S~]~
+                             ~@[ with error code ~A~]"
 					 (parsing-error-start condition) 
 					 (parsing-error-end condition) 
 					 (parsing-error-value condition) 
 					 (parsing-error-position condition)
 					 (parsing-error-reason condition))))
   (:documentation "Condition to be signalled by parser functions, if they
-cannot parse a given region of a string. This class is intended as base
-class for more specific condition types."))
+    cannot parse a given region of a string. This class is intended as base
+    class for more specific condition types."))
 
 
 (define-condition number-format-error (parsing-error) ()
   (:documentation "Condition to be signalled by parse-decimal and related
-functions, if they fail to parse a given input string. The condition instance
-provides information the context of the error, i.e., the string being parsed
-as well as the position where parsing had to stop."))
+    functions, if they fail to parse a given input string. The condition instance
+    provides information the context of the error, i.e., the string being parsed
+    as well as the position where parsing had to stop."))
 
-
-(define-condition gtin-format-error (parsing-error)
-  ((partial-result
-     :initarg :partial-result :initform nil :reader gtin-format-error-partial-result
-     :documentation "The GTIN/EAN as seen so far")
-   (digits
-     :initarg :digits :initform nil :reader gtin-format-error-digits
-     :documentation "The number of significant digits parsed"))
-  (:documentation "Condition to be signalled by parse-gtin-value, if
-the string supplied does not contain a well-formed GTIN/EAN number.
-Aside from information already present in superclass parsing-error,
-this class additionally gives access to the partial result of the
-parse process, as well as to the number of significant digits
-processed."))
