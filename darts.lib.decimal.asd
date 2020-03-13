@@ -1,6 +1,6 @@
 #|                                           -*- mode: lisp; coding: utf-8 -*-
   Deterministic Arts -- Decimal Numbers Library
-  Copyright (c) 2011, 2015 Dirk Esser
+  Copyright (c) 2011, 2015, 2020 Dirk Esser
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
   THE SOFTWARE.
 |#
 
-(asdf:defsystem :darts.lib.decimal
+(asdf:defsystem #:darts.lib.decimal
   :name "darts.lib.decimal"
   :author "Dirk Esser"
   :version "0.2"
@@ -35,5 +35,5 @@
   ((:module :src
     :components
     ((:file "package")
-	 (:file "conditions" :depends-on ("package"))
-	 (:file "decimal" :depends-on ("conditions"))))))            
+     (:file "conditions" :depends-on ("package"))
+     (:file "decimal" :depends-on ("conditions"))))))

@@ -1,6 +1,6 @@
 #|                                           -*- mode: lisp; coding: utf-8 -*-
   Deterministic Arts -- Decimal Numbers Library
-  Copyright (c) 2013, 2015 Dirk Esser
+  Copyright (c) 2013, 2015, 2020 Dirk Esser
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
   THE SOFTWARE.
 |#
 
-(in-package "DARTS.LIB.DECIMAL")
+(in-package #:darts.lib.decimal)
 
 (defvar *decimal-places* 2
   "Default number of decimal places used by round-decimal.")
@@ -98,7 +98,7 @@
 
 
 (defun parse-decimal (value 
-					  &key (start 0) (end (length value)) (radix 10)
+		      &key (start 0) (end (length value)) (radix 10)
                         (junk-allowed nil) (decimal-point *default-decimal-point*)
                         (grouping-symbol *default-grouping-symbol*))
   "parse-decimal VALUE &key START END RADIX JUNK-ALLOWED DECIMAL-POINT GROUPING-SYMBOL => NUMBER, POSITION

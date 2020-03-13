@@ -1,6 +1,6 @@
 #|                                           -*- mode: lisp; coding: utf-8 -*-
   Deterministic Arts -- Decimal Numbers Library
-  Copyright (c) 2013, 2015 Dirk Esser
+  Copyright (c) 2013, 2015, 2020 Dirk Esser
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,12 @@
   THE SOFTWARE.
 |#
 
-(defpackage "DARTS.LIB.DECIMAL"
-  (:use "COMMON-LISP")
-  (:export "ROUND-DECIMAL" "PARSE-DECIMAL" "*DECIMAL-PLACES*" "DECIMAL"
-           "DECIMALP" "ROUNDING-MODE" "*ROUNDING-MODE*" "NUMBER-FORMAT-ERROR" 
-           "PARSING-ERROR" "PARSING-ERROR-VALUE" "PARSING-ERROR-START" 
-           "PARSING-ERROR-END" "PARSING-ERROR-POSITION" 
-           "PARSING-ERROR-REASON" "NUMBER-FORMAT-ERROR" "FORMAT-INTEGER"
-           "FORMAT-DECIMAL"))
+(defpackage #:darts.lib.decimal
+  (:use #:common-lisp)
+  (:export #:round-decimal #:parse-decimal #:*decimal-places* #:decimal
+           #:decimalp #:rounding-mode #:*rounding-mode* #:number-format-error
+           #:parsing-error #:parsing-error-value #:parsing-error-start
+           #:parsing-error-end #:parsing-error-position 
+           #:parsing-error-reason #:number-format-error #:format-integer
+           #:format-decimal))
 
