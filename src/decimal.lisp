@@ -98,7 +98,7 @@
 
 
 (defun parse-decimal (value 
-		      &key (start 0) (end (length value)) (radix 10)
+		      &key (start 0) end (radix 10)
                         (junk-allowed nil) (decimal-point *default-decimal-point*)
                         (grouping-symbol *default-grouping-symbol*))
   "parse-decimal VALUE &key START END RADIX JUNK-ALLOWED DECIMAL-POINT GROUPING-SYMBOL => NUMBER, POSITION
