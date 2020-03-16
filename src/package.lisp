@@ -22,11 +22,13 @@
 |#
 
 (defpackage #:darts.lib.decimal
-  (:use #:common-lisp)
+  (:use #:common-lisp #:darts.lib.locale #:darts.lib.locale-categories #:alexandria)
   (:export #:round-decimal #:parse-decimal #:*decimal-places* #:decimal
            #:decimalp #:rounding-mode #:*rounding-mode* #:number-format-error
            #:parsing-error #:parsing-error-value #:parsing-error-start
            #:parsing-error-end #:parsing-error-position 
            #:parsing-error-reason #:number-format-error #:format-integer
-           #:format-decimal))
+           #:format-decimal #:localized-decimal-point #:localized-grouping-symbol
+           #:localized-plus-symbol #:localized-minus-symbol #:localized-primary-group-size
+           #:localized-secondary-group-size #:number-symbols #:make-number-symbols))
 

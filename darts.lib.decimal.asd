@@ -29,7 +29,7 @@
   :licence "MIT"
   :description "Provides various utilities for dealing with decimal numbers"
   :long-description ""
-  :depends-on ()
+  :depends-on (#:darts.lib.locale #:alexandria)
   :serial t
   :components
   ((:module :src

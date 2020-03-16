@@ -29,22 +29,89 @@
 (defvar *rounding-mode* :half-up
   "Default rounding mode used by round-decimal.")
 
-(defvar *default-grouping-symbol* #\,
-  "Default grouping symbol to use.")
-
-(defvar *default-decimal-point* #\.
-  "Character to use as decimal point symbol by default")
-
-(defvar *default-primary-group-size* 3
-  "Default number of characters in the \"primary\" group of an
-   integer. The terminology follows the ICU library here.")
-
-(defvar *default-secondary-group-size* 3
-  "Default number of characters in the \"primary\" group of an
-   integer. The terminology follows the ICU library here.")
-
+(defvar *default-grouping-symbol* #\,)
+(defvar *default-decimal-point* #\.)
+(defvar *default-primary-group-size* 3)
+(defvar *default-secondary-group-size* 3)
 (defvar *default-plus-symbol* #\+)
 (defvar *default-minus-symbol* #\-)
+
+(defgeneric localized-grouping-symbol (object)
+  (:method (object) (declare (ignore object)) *default-grouping-symbol*))
+
+(defgeneric localized-decimal-point (object)
+  (:method (object) (declare (ignore object)) *default-decimal-point*))
+
+(defgeneric localized-plus-symbol (object)
+  (:method (object) (declare (ignore object)) *default-plus-symbol*))
+
+(defgeneric localized-minus-symbol (object)
+  (:method (object) (declare (ignore object)) *default-minus-symbol*))
+
+(defgeneric localized-primary-group-size (object)
+  (:method (object) (declare (ignore object)) *default-primary-group-size*))
+
+(defgeneric localized-secondary-group-size (object)
+  (:method (object) (declare (ignore object)) *default-secondary-group-size*))
+
+(define-constant +whitespace+
+    #.(concatenate 'string '(#\newline #\tab #\return #\space))
+    :test #'string=)
+
+(define-locale-category number-symbols
+    ((decimal-point
+       :type character :default #\.
+       :parser (lambda (value) (char (string-trim +whitespace+ value) 0))
+       :documentation "The character used as decimal point.")
+     (grouping-symbol
+       :type character :default #\,
+       :parser (lambda (value) (char (string-trim +whitespace+ value) 0))
+       :documentation "The character used as separator between groups of digits.")
+     (primary-group-size
+       :type integer :default 3
+       :parser parse-integer
+       :documentation "The number of digits in the \"primary\" group.")
+     (secondary-group-size
+       :type integer :default 3
+       :parser parse-integer
+       :documentation "The number of digits in all but the \"primary\" group.")
+     (plus-symbol
+       :type character :default #\+
+       :parser (lambda (value) (char (string-trim +whitespace+ value) 0))
+       :documentation "The default symbol used as sign for positive numbers.")
+     (minus-symbol
+       :type character :default #\-
+       :parser (lambda (value) (char (string-trim +whitespace+ value) 0))
+       :documentation "The default symbol used as sign for negative numbers."))
+  (:cache-function t))
+
+(defmethod localized-decimal-point ((object number-symbols))
+  (number-symbols-decimal-point object))
+
+(defmethod localized-grouping-symbol ((object number-symbols))
+  (number-symbols-grouping-symbol object))
+
+(defmethod localized-plus-symbol ((object number-symbols))
+  (number-symbols-plus-symbol object))
+
+(defmethod localized-minus-symbol ((object number-symbols))
+  (number-symbols-minus-symbol object))
+
+(defmethod localized-primary-group-size ((object number-symbols))
+  (number-symbols-primary-group-size object))
+
+(defmethod localized-secondary-group-size ((object number-symbols))
+  (number-symbols-secondary-group-size object))
+
+(add-locale-resource-directory (asdf:system-relative-pathname '#:darts.lib.decimal "./data/"))
+
+(defun resolve-number-symbols (designator)
+  (typecase designator
+    (null nil)
+    (number-symbols designator)
+    (locale (number-symbols designator))
+    (string (number-symbols (locale designator)))
+    (t designator)))
 
 
 (deftype rounding-mode ()
@@ -99,8 +166,8 @@
 
 (defun parse-decimal (value 
 		      &key (start 0) end (radix 10)
-                        (junk-allowed nil) (decimal-point *default-decimal-point*)
-                        (grouping-symbol *default-grouping-symbol*))
+                           (junk-allowed nil) (locale *locale*)
+                           decimal-point grouping-symbol)
   "parse-decimal VALUE &key START END RADIX JUNK-ALLOWED DECIMAL-POINT GROUPING-SYMBOL => NUMBER, POSITION
 
    Parses the part of string VALUE between indices START (inclusive, 
@@ -131,8 +198,10 @@
    Note, that the resulting numeric value of this function 
    is always an exact number, i.e., either an integer or a ratio."
   (let* ((value (string value))
-         (end (or end (length value))))
-
+         (end (or end (length value)))
+         (locale (resolve-number-symbols locale))
+         (decimal-point (or decimal-point (localized-decimal-point locale)))
+         (grouping-symbol (or grouping-symbol (localized-grouping-symbol locale))))
     (assert (<= 0 start end (length value)) (start end))
     (labels ((digit (char)
                (let* ((code (char-code char))
@@ -264,12 +333,9 @@
              :format-arguments (list value (if (consp max) "<" "<=") (if (consp max) (car max) max)))) 
     rounded))
 
-
-
-
 (defun group-digits (string grouping-symbol primary-group-size secondary-group-size)
   (let ((length (length string)))
-    (if (<= length primary-group-size)
+    (if (or (<= length primary-group-size) (null grouping-symbol))
         string
         (let ((secondary-length (- length primary-group-size)))
           (multiple-value-bind (num-groups rest) (floor secondary-length secondary-group-size)
@@ -293,13 +359,8 @@
                           (setf wp wp*))))
                 buffer)))))))
 
-
-
-
-(defun format-natural (value
-                       &key (grouping-symbol #\,) (group-size 3) 
-                            (minimum-width 0) (primary-group-size group-size)
-                            (secondary-group-size group-size))
+(defun format-natural (value minimum-width grouping-symbol primary-group-size
+                       secondary-group-size)
   (check-type value (integer 0))
   (group-digits (format nil "~v,'0D" minimum-width value)
                 grouping-symbol primary-group-size secondary-group-size))
@@ -307,59 +368,57 @@
 
 (defun format-integer (value 
                        &key ((:stream stream) nil)
-                            (grouping-symbol *default-grouping-symbol*)
-                            (plus-symbol *default-plus-symbol*)
-                            (minus-symbol *default-minus-symbol*)
-                            (minimum-width 0) 
-                            (primary-group-size *default-primary-group-size*)
-                            (secondary-group-size *default-secondary-group-size*)
-                            (force-sign nil))
+                            (locale *locale*) (minimum-width 0) (force-sign nil)
+                            grouping-symbol plus-symbol minus-symbol
+                            primary-group-size secondary-group-size)
   (check-type value integer)
-  (let* ((destination (if stream stream (make-array 8 :element-type 'character :fill-pointer 0 :adjustable t :initial-element #\space)))
+  (let* ((locale (resolve-number-symbols locale))
+         (grouping-symbol (if (eq grouping-symbol :none) nil (or grouping-symbol (localized-grouping-symbol locale))))
+         (plus-symbol (or plus-symbol (localized-plus-symbol locale)))
+         (minus-symbol (or minus-symbol (localized-minus-symbol locale)))
+         (destination (if stream stream (make-array 8 :element-type 'character :fill-pointer 0 :adjustable t :initial-element #\space)))
          (minus (minusp value))
          (sign (if minus minus-symbol plus-symbol))
          (want-sign (or minus force-sign))
-         (string (format-natural (if minus (- value) value) 
-                                 :primary-group-size primary-group-size :secondary-group-size secondary-group-size
-                                 :minimum-width minimum-width :grouping-symbol grouping-symbol)))
+         (string (format-natural (if minus (- value) value) minimum-width grouping-symbol
+                                 (or primary-group-size (localized-primary-group-size locale))
+                                 (or secondary-group-size (localized-secondary-group-size locale)))))
     (format destination "~@[~A~]~A" (and want-sign sign) string)
     (unless stream
       (coerce destination 'simple-string))))
 
 
 (defun format-decimal (value
-                       &key ((:stream stream) nil)
+                       &key ((:stream stream) nil) (locale *locale*)
                             (min-fraction-digits 2) (max-fraction-digits 2)
-                            (min-integer-digits 1) 
-                            (primary-group-size *default-primary-group-size*)
-                            (secondary-group-size *default-secondary-group-size*)
-                            (decimal-point *default-decimal-point*)
-                            (grouping-symbol *default-grouping-symbol*)
-                            (plus-symbol *default-plus-symbol*)
-                            (minus-symbol *default-minus-symbol*)
-                            (force-sign nil) (rounding-mode *rounding-mode*))
+                            (min-integer-digits 1) (force-sign nil) (rounding-mode *rounding-mode*)
+                            primary-group-size secondary-group-size decimal-point
+                            grouping-symbol plus-symbol minus-symbol)
   (when (< max-fraction-digits min-fraction-digits) (error "~S must be equal to or greater than ~S" :max-fraction-digits :min-fraction-digits))
   (when (< min-fraction-digits 0) (error "~S must be non-negative" :min-fraction-digits))
   (when (< min-integer-digits 1) (error "~S must be positive" :min-integer-digits))
   (let* ((destination (if (null stream) 
                           (make-array 8 :element-type 'character :fill-pointer 0 :adjustable t :initial-element #\space)
                           stream))
+         (locale (resolve-number-symbols locale))
          (minus (minusp value))
-         (sign (if minus minus-symbol plus-symbol))
+         (sign (if minus (or minus-symbol (localized-minus-symbol locale)) (or plus-symbol (localized-plus-symbol locale))))
          (want-sign (or minus force-sign))
          (value (etypecase value
                   (integer (abs value))
                   (rational (round-decimal (abs value) :places max-fraction-digits :mode rounding-mode))
                   (real (round-decimal (rational (abs value)) :places max-fraction-digits :mode rounding-mode)))))
     (multiple-value-bind (integer fraction) (floor value 1)
-      (let ((grouped-integer (format-natural integer 
-                                             :grouping-symbol grouping-symbol :minimum-width min-integer-digits
-                                             :primary-group-size primary-group-size
-                                             :secondary-group-size secondary-group-size)))
+      (let ((grouped-integer (format-natural integer min-integer-digits
+                                             (if (eq grouping-symbol :none) nil (or grouping-symbol (localized-grouping-symbol locale)))
+                                             (or primary-group-size (localized-primary-group-size locale))
+                                             (or secondary-group-size (localized-secondary-group-size locale)))))
         (if (zerop fraction)
             (if (zerop min-fraction-digits) 
                 (format destination "~A~A" (if want-sign sign "") grouped-integer)
-                (format destination "~A~A~A~v,'0D" (if want-sign sign "") grouped-integer decimal-point min-fraction-digits 0))
+                (format destination "~A~A~A~v,'0D" (if want-sign sign "")
+                        grouped-integer (or decimal-point (localized-decimal-point locale))
+                        min-fraction-digits 0))
             ;; XXX - This is really, really stupid! And I am not sure, how
             ;; portable it is.
             (let ((string (subseq (format nil "~,vF" max-fraction-digits fraction) 2)))
@@ -376,6 +435,7 @@
                          (format destination "~A~A" (if want-sign sign "") grouped-integer)
                          (format destination "~A~A~A~A"
                                  (if want-sign sign "") grouped-integer 
-                                 decimal-point (subseq string 0 end)))))))))
+                                 (or decimal-point (localized-decimal-point locale))
+                                 (subseq string 0 end)))))))))
     (unless stream
       (coerce destination 'simple-string))))
