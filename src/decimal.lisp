@@ -58,7 +58,7 @@
     #.(concatenate 'string '(#\newline #\tab #\return #\space))
     :test #'string=)
 
-(define-locale-category number-symbols
+(define-locale-resource number-symbols
     ((decimal-point
        :type character :default #\.
        :parser (lambda (value) (char (string-trim +whitespace+ value) 0))

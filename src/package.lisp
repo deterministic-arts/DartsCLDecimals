@@ -22,7 +22,7 @@
 |#
 
 (defpackage #:darts.lib.decimal
-  (:use #:common-lisp #:darts.lib.locale #:darts.lib.locale-categories #:alexandria)
+  (:use #:common-lisp #:darts.lib.locale #:darts.lib.locale.resources #:alexandria)
   (:export #:round-decimal #:parse-decimal #:*decimal-places* #:decimal
            #:decimalp #:rounding-mode #:*rounding-mode* #:number-format-error
            #:parsing-error #:parsing-error-value #:parsing-error-start
